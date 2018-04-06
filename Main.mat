@@ -1,3 +1,161 @@
+clear
+format compact
+
+% Number of joints and number of members.
+j = 8;
+m = 13;
+
+% Checking for appropriate relationship between number of joints and number
+% of members.
+jm = joints_n_members(j,m);
+fprintf('\n%s\n\n',jm)
+
+% Creating connection matrix. 8 joints (rows) and 13 members (columns).
+C = zeros(8,13);
+
+% Editing connection matrix to match joints with members.
+C(1,1) = 1;
+C(1,2) = 1;
+C(2,1) = 1;
+C(2,3) = 1;
+C(2,4) = 1;
+C(3,4) = 1;
+C(3,5) = 1;
+C(3,6) = 1;
+C(4,2) = 1;
+C(4,3) = 1;
+C(4,5) = 1;
+C(4,7) = 1;
+C(4,8) = 1;
+C(5,6) = 1;
+C(5,7) = 1;
+C(5,9) = 1;
+C(5,10) = 1;
+C(6,8) = 1;
+C(6,9) = 1;
+C(6,11) = 1;
+C(6,12) = 1;
+C(7,10) = 1;
+C(7,11) = 1;
+C(7,13) = 1;
+C(8,12) = 1;
+C(8,13) = 1;
+
+% Checking to make sure that all members are connected to 2 joints.
+% Unsuppress to check.
+joint_check = sum(C,1);
+
+% Creating matrices for support forces.
+Ax = zeros(j,1);
+Ax(1,1) = 1;
+Ay = zeros(j,1);
+Ay(1,1) = 1;
+Hy = zeros(j,1);
+Hy(8,1) = 1;
+Sx = zeros(j,3);
+Sy = zeros(j,3);
+
+Sx(:,1) = Ax;
+Sy(:,2) = Ay;
+Sy(:,3) = Hy;
+S = [Sx; Sy];
+
+% Creating x and y reference vectors for joints.
+x = [1,1,2,2,3,3,4,4];
+y = [1,2,3,2,3,2,2,1];
+
+% Associating joints with x and y points.
+j1 = [x(1),y(1)];
+j2 = [x(2),y(2)];
+j3 = [x(3),y(3)];
+j4 = [x(4),y(4)];
+j5 = [x(5),y(5)];
+j6 = [x(6),y(6)];
+j7 = [x(7),y(7)];
+j8 = [x(8),y(8)];
+
+jlist = [j1, j2, j3, j4, j5, j6, j7, j8];
+
+% Creating load vector.
+L = zeros(2*j, 1);
+L(12,1) = 25;
+
+% Determining distances between joints (or equally, lengths of members).
+r1 = distance(j1,j2);
+r2 = distance(j1,j4);
+r3 = distance(j2,j4);
+r4 = distance(j2,j3);
+r5 = distance(j3,j4);
+r6 = distance(j3,j5);
+r7 = distance(j4,j5);
+r8 = distance(j4,j6);
+r9 = distance(j5,j6);
+r10 = distance(j5,j7);
+r11 = distance(j6,j7);
+r12 = distance(j6,j8);
+r13 = distance(j7,j8);
+
+r = [r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13];
+
+% Determining the units vectors and putting them into member column
+% vectors.
+u1_2 = unit_vector(j1,j2,r1);
+u2_1 = unit_vector(j2,j1,r1);
+m1 = members(u1_2, u2_1, jlist, 1, 2);
+
+u1_4 = unit_vector(j1,j4,r2);
+u4_1 = unit_vector(j4,j1,r2);
+m2 = members(u1_4, u4_1, jlist, 1, 4);
+
+u2_4 = unit_vector(j2,j4,r3);
+u4_2 = unit_vector(j4,j2,r3);
+m3 = members(u2_4, u4_2, jlist, 2, 4);
+
+u2_3 = unit_vector(j2,j3,r4);
+u3_2 = unit_vector(j3,j2,r4);
+m4 = members(u2_3, u3_2, jlist, 2, 3);
+
+u3_4 = unit_vector(j3,j4,r5);
+u4_3 = unit_vector(j4,j3,r5);
+m5 = members(u3_4, u4_3, jlist, 3, 4);
+
+u3_5 = unit_vector(j3,j5,r6);
+u5_3 = unit_vector(j5,j3,r6);
+m6 = members(u3_5, u5_3, jlist, 3, 5);
+
+u4_5 = unit_vector(j4,j5,r7);
+u5_4 = unit_vector(j5,j4,r7);
+m7 = members(u4_5, u5_4, jlist, 4, 5);
+
+u4_6 = unit_vector(j4,j6,r8);
+u6_4 = unit_vector(j6,j4,r8);
+m8 = members(u4_6, u6_4, jlist, 4, 6);
+
+u5_6 = unit_vector(j5,j6,r9);
+u6_5 = unit_vector(j6,j5,r9);
+m9 = members(u5_6, u6_5, jlist, 5, 6);
+
+u5_7 = unit_vector(j5,j7,r10);
+u7_5 = unit_vector(j7,j5,r10);
+m10 = members(u5_7, u7_5, jlist, 5, 7);
+
+u6_7 = unit_vector(j6,j7,r11);
+u7_6 = unit_vector(j7,j6,r11);
+m11 = members(u6_7, u7_6, jlist, 6, 7);
+
+u6_8 = unit_vector(j6,j8,r12);
+u8_6 = unit_vector(j8,j6,r12);
+m12 = members(u6_8, u8_6, jlist, 6, 8);
+
+u7_8 = unit_vector(j7,j8,r13);
+u8_7 = unit_vector(j8,j7,r13);
+m13 = members(u7_8, u8_7, jlist, 7, 8);
+
+% Combining the member columns vectors with the support force vectors (Sx, Sy) to
+% create matrix A.
+A = [m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, S];
+
+T = inv(A)*L
 
 
 
